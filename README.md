@@ -15,4 +15,8 @@ function my_kara(kara) {
 }
 ```
 
-![Kara Example](https://github.com/tkilla77/kara5js/assets/83454585/639cbc77-ffec-48e8-85c4-1714527af514)
+
+https://github.com/tkilla77/kara5js/assets/83454585/1497a6fb-4fe1-4fae-9ee8-c1bea3a78bf0
+
+
+[Kara Example](./kara_p5js.webm)
