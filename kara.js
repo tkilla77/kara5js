@@ -381,24 +381,24 @@ class KaraRecorder {
     return this.kara.onLeaf();    
   }
   move() {
-    this.kara.move();
     this.commands.push(this.move.name);
+    this.kara.move();
   }
   turnLeft() {
-    this.kara.turnLeft();
     this.commands.push(this.turnLeft.name);
+    this.kara.turnLeft();
   }
   turnRight() {
-    this.kara.turnRight();
     this.commands.push(this.turnRight.name);
+    this.kara.turnRight();
   }
   putLeaf() {
-    this.kara.putLeaf();
     this.commands.push(this.putLeaf.name);
+    this.kara.putLeaf();
   }
   removeLeaf() {
-    this.kara.removeLeaf();
     this.commands.push(this.removeLeaf.name);
+    this.kara.removeLeaf();
   }
 }
 
@@ -436,7 +436,11 @@ class Game {
       commands executed in the same order results in the same outcome. */
   async executeKara(recorder, delay_ms, client_function=my_kara) {
     // TODO check if my_kara is defined.
-    client_function(recorder); // call well-known function in client-code
+    try {
+      client_function(recorder); // call well-known function in client-code
+    } catch (e) {
+      // Swallow exception since replay will hit it again.
+    }
     let stepper = new KaraStepper(this.kara, delay_ms); 
     return recorder.replay(stepper);
   }
