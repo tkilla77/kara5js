@@ -3,6 +3,7 @@ A Kara implementation for [processing](https://processing.org/) on [p5js](https:
 
 ## Examples
 [Simple Example](https://editor.p5js.org/tkilla77/full/NdMUAvfdD)
+[Labyrinth Escape](https://editor.p5js.org/tkilla77/full/WHpt09ado)
 
 ```js
 function my_kara(kara) {
