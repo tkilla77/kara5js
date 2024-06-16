@@ -5,6 +5,13 @@ function assert(condition, error = "Error") {
   }
 }
 
+class InvalidMoveException extends Error {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
 const CELL_SIZE = 25;
 const GRID_SIZE = [8, 8];
 
@@ -281,7 +288,7 @@ class Kara {
       let dest = this.coords.move(this.direction);
       this.coords = dest;
     } else {
-      throw new Error(`Unable to move from ${this.coords} in direction ${this.direction}!`);
+      throw new InvalidMoveException(`Unable to move from ${this.coords} in direction ${this.direction}!`);
     }
   }
   turnLeft() {
@@ -355,14 +362,22 @@ class KaraStepper {
     addition to executing them, for later replay, for example using an
     async KaraStepper. */
 class KaraRecorder {
-  constructor(target) {
+  constructor(target, maxCommands = 50) {
     this.kara = target;
     this.commands = Array();
+    this.maxCommands = maxCommands;
   }
   async replay(target) {
     for (let command of this.commands) {
       await target[command]();
     }
+  }
+  record(command) {
+    // console.log(`recording ${command}`);
+    if (this.commands.length > this.maxCommands) {
+      throw new Error("too many commands recorded");
+    }
+    this.commands.push(command);
   }
 
   treeFront() {
@@ -381,23 +396,23 @@ class KaraRecorder {
     return this.kara.onLeaf();    
   }
   move() {
-    this.commands.push(this.move.name);
+    this.record(this.move.name);
     this.kara.move();
   }
   turnLeft() {
-    this.commands.push(this.turnLeft.name);
+    this.record(this.turnLeft.name);
     this.kara.turnLeft();
   }
   turnRight() {
-    this.commands.push(this.turnRight.name);
+    this.record(this.turnRight.name);
     this.kara.turnRight();
   }
   putLeaf() {
-    this.commands.push(this.putLeaf.name);
+    this.record(this.putLeaf.name);
     this.kara.putLeaf();
   }
   removeLeaf() {
-    this.commands.push(this.removeLeaf.name);
+    this.record(this.removeLeaf.name);
     this.kara.removeLeaf();
   }
 }
@@ -439,7 +454,10 @@ class Game {
     try {
       client_function(recorder); // call well-known function in client-code
     } catch (e) {
-      // Swallow exception since replay will hit it again.
+      if (e instanceof InvalidMoveException) {
+        // swallow, will raise during replay
+      }
+      console.log(e);
     }
     let stepper = new KaraStepper(this.kara, delay_ms); 
     return recorder.replay(stepper);
@@ -466,3 +484,4 @@ class Game {
     }
   }  
 }
+
