@@ -17,6 +17,3 @@ function my_kara(kara) {
 
 
 https://github.com/tkilla77/kara5js/assets/83454585/1497a6fb-4fe1-4fae-9ee8-c1bea3a78bf0
-
-
-[Kara Example](./kara_p5js.webm)
