@@ -101,7 +101,7 @@ class Cell {
       case "🍀":
         return Cells.CLOVER;
       default:
-        return new Cell(spec);
+        return new Cell(spec, spec);
     }
   }
   constructor(display="?", type=EMPTY) {
