@@ -597,7 +597,7 @@ KaraWorld.create(
       }
     } catch (e) {
       if (e instanceof InvalidMoveException) {
-        // Swallow exception, will raise again during replay
+        // Swallow exception and abort execution, will raise again during replay.
       }
       // Log other exceptions (e.g. too many moves), but do not abort.
       console.log(e);
