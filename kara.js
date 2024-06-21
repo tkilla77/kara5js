@@ -272,6 +272,10 @@ class Grid {
     }
     pop();
   }
+
+  gridSize() {
+    return Coordinates.fromXy(this.grid[0].length, this.grid.length);
+  }
     
   toString() {
     return this.grid.map(line => line.map(cell => cell.toString()).join("")).join("\n");
@@ -420,7 +424,7 @@ class KaraRecorder {
   record(command) {
     // console.log(`recording ${command}`);
     if (this.commands.length > this.maxCommands) {
-      throw new Error("too many commands recorded");
+      throw new Error(`Stopped recording after ${this.maxCommands} commands.`);
     }
     this.commands.push(command);
   }
@@ -463,13 +467,33 @@ class KaraRecorder {
 }
 
 /** A Kara game including a game grid and one Kara beetle. */
-class Game {
+class KaraWorld {
+  /** Creates a new game from a string spec and sets up a processing setup and draw function. */
+  static install(gridspec=EMPTY_GRID_SPEC, cell_size=25, install=true, keyhandler=true) {
+    let game = KaraWorld.fromStringSpec(gridspec);
+    if (install) {
+      let size = game.grid.gridSize();
+      window.setup = () => {
+        createCanvas(size.x * cell_size, size.y * cell_size);
+        game.executeKara();
+      }
+      window.draw = () => {
+        game.draw(cell_size);
+      }
+      window.kara = game.getRecorder();
+    }
+    if (keyhandler) {
+      window.keyPressed = game.keyPressed;
+    }
+    return game;
+  }
+
   /** Creates a new game from a grid spec. Note that it is not possible to create a game
    * where Kara's initial square also contains a non-empty cell (leaf or mushroom). */
   static fromStringSpec(gridspec=EMPTY_GRID_SPEC) {
     let grid = Grid.fromStringSpec(gridspec);
     let kara = grid.findKara();
-    return new Game(grid, kara);
+    return new KaraWorld(grid, kara);
   }
   constructor(grid, kara) {
     this.grid = grid;
@@ -502,8 +526,9 @@ class Game {
       client_function(this.recorder); // call well-known function in client-code
     } catch (e) {
       if (e instanceof InvalidMoveException) {
-        // swallow, will raise during replay
+        // Swallow exception, will raise again during replay
       }
+      // Log other exceptions (e.g. too many moves), but do not abort.
       console.log(e);
     }
     let stepper = new KaraStepper(this.kara, delay_ms); 
