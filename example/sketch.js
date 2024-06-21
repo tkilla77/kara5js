@@ -4,7 +4,7 @@
 // C: Clover leaf
 // <^>v: Kara start position and direction.
 // ' ' or _: Empty cell
-KaraWorld.install(
+let game = KaraWorld.install(
     `TTTTTTTTT
      T       T
      T  C    T
@@ -18,7 +18,7 @@ KaraWorld.install(
 function my_kara(kara) {
     while (!kara.mushroomFront()) {
         if (kara.treeFront()) {
-            kara.turnLeft();
+            kara.turnRight();
         } else {
             kara.move();
         }

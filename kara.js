@@ -476,14 +476,16 @@ class KaraWorld {
       window.setup = () => {
         createCanvas(size.x * cell_size, size.y * cell_size);
         game.executeKara();
-      }
+      };
       window.draw = () => {
         game.draw(cell_size);
-      }
+      };
       window.kara = game.getRecorder();
     }
     if (keyhandler) {
-      window.keyPressed = game.keyPressed;
+      window.keyPressed = () => {
+        game.keyPressed();
+      };
     }
     return game;
   }
