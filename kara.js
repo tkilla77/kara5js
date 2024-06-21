@@ -12,7 +12,6 @@ class InvalidMoveException extends Error {
   }
 }
 
-const CELL_SIZE = 25;
 const GRID_SIZE = [8, 8];
 
 /** 2D grid cell coordinates. */
@@ -188,6 +187,52 @@ class Grid {
       this.grid[y] = Array.from(line);
     }
   }
+
+  /** Finds the first Kara-cell and returns a corresponding Kara. Removes all Kara-like cells. */
+  findKara() {
+    let kara = undefined;
+    let firstEmpty = undefined;
+    for (let y = 0; y < this.grid.length; y++) {
+      let line = this.grid[y];
+      for (let x = 0; x < line.length; x++) {
+        let coords = Coordinates.fromXy(x, y);
+        let cell = this.at(coords);
+        if (cell == Cells.EMPTY && !firstEmpty) {
+          firstEmpty = coords;
+        }
+        if (!kara) {
+          switch (cell.type) {
+            case '<':
+              kara = new Kara(this, coords, Direction.LEFT);
+              break;
+            case '^':
+              kara = new Kara(this, coords, Direction.UP);
+              break;
+            case '>':
+              kara = new Kara(this, coords, Direction.RIGHT);
+              break;
+            case 'V':
+            case 'v':
+              kara = new Kara(this, coords, Direction.DOWN);
+              break;
+          }
+        }
+        switch (cell.type) {
+          case '<':
+          case '^':
+          case '>':
+          case 'V':
+          case 'v':
+            this.clear(coords);
+        }
+      }
+    }
+    if (!kara && firstEmpty) {
+      // Default to the first empty cell.
+      kara = new Kara(this, firstEmpty, Direction.RIGHT);
+    }
+    return kara;
+  }
   
   /** Returns the cell at the given coordinates. */
   at(coords) {
@@ -206,7 +251,7 @@ class Grid {
   
   /** Draws the grid using processing primitives, from the given 
       upper-left corner and using the given cell size, both in pixels. */
-  draw(cell_size) {
+  draw(cell_size=25) {
     push();
     stroke('rgba(115,115,115,0.5)');
     textAlign(CENTER, CENTER);
@@ -419,14 +464,20 @@ class KaraRecorder {
 
 /** A Kara game including a game grid and one Kara beetle. */
 class Game {
-  static fromStringSpec(kara_coords=Coordinates.fromXy(1,1), kara_direction=Directions.RIGHT, gridspec=EMPTY_GRID_SPEC) {
+  /** Creates a new game from a grid spec. Note that it is not possible to create a game
+   * where Kara's initial square also contains a non-empty cell (leaf or mushroom). */
+  static fromStringSpec(gridspec=EMPTY_GRID_SPEC) {
     let grid = Grid.fromStringSpec(gridspec);
-    let kara = new Kara(grid, kara_coords, kara_direction);
+    let kara = grid.findKara();
     return new Game(grid, kara);
   }
   constructor(grid, kara) {
     this.grid = grid;
     this.kara = kara;
+    let gridCopy = Grid.copy(this.grid);
+    let karaCopy = Object.create(this.kara);
+    karaCopy.grid = gridCopy;
+    this.recorder = new KaraRecorder(karaCopy);
   }
   draw(cell_size) {
     push();
@@ -436,12 +487,8 @@ class Game {
     pop();    
   }
   
-  createRecorder() {
-    let gridCopy = Grid.copy(this.grid);
-    let karaCopy = Object.create(this.kara);
-    karaCopy.grid = gridCopy;
-    let recorder = new KaraRecorder(karaCopy);
-    return recorder;
+  getRecorder() {
+    return this.recorder;
   }
   
   /** Executes the well-known client-side 'my_kara(Kara)' function and 
@@ -449,10 +496,10 @@ class Game {
       KaraStepper.
       <p>This function assumes a deterministic world where each set of
       commands executed in the same order results in the same outcome. */
-  async executeKara(recorder, delay_ms, client_function=my_kara) {
+  async executeKara(delay_ms=500, client_function=my_kara) {
     // TODO check if my_kara is defined.
     try {
-      client_function(recorder); // call well-known function in client-code
+      client_function(this.recorder); // call well-known function in client-code
     } catch (e) {
       if (e instanceof InvalidMoveException) {
         // swallow, will raise during replay
@@ -460,7 +507,7 @@ class Game {
       console.log(e);
     }
     let stepper = new KaraStepper(this.kara, delay_ms); 
-    return recorder.replay(stepper);
+    return this.recorder.replay(stepper);
   }
   
   /** A key-handler for manual Kara movement. */
