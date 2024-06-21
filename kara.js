@@ -469,7 +469,7 @@ class KaraRecorder {
 /** A Kara game including a game grid and one Kara beetle. */
 class KaraWorld {
   /** Creates a new game from a string spec and sets up a processing setup and draw function. */
-  static install(gridspec=EMPTY_GRID_SPEC, cell_size=25, install=true, keyhandler=true) {
+  static create(gridspec=EMPTY_GRID_SPEC, cell_size=25, install=true, keyhandler=true) {
     let game = KaraWorld.fromStringSpec(gridspec);
     if (install) {
       let size = game.grid.gridSize();

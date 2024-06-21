@@ -4,7 +4,7 @@
 // C: Clover leaf
 // <^>v: Kara start position and direction.
 // ' ' or _: Empty cell
-let game = KaraWorld.install(
+let game = KaraWorld.create(
     `TTTTTTTTT
      T       T
      T  C    T
