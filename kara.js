@@ -538,7 +538,7 @@ KaraWorld.create(
     }
     if (keyhandler) {
       window.keyPressed = () => {
-        game.keyPressed();
+        return game.keyPressed();
       };
     }
     return game;
