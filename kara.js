@@ -214,17 +214,17 @@ class Grid {
         if (!kara) {
           switch (cell.type) {
             case '<':
-              kara = new Kara(this, coords, Direction.LEFT);
+              kara = new Kara(this, coords, Directions.LEFT);
               break;
             case '^':
-              kara = new Kara(this, coords, Direction.UP);
+              kara = new Kara(this, coords, Directions.UP);
               break;
             case '>':
-              kara = new Kara(this, coords, Direction.RIGHT);
+              kara = new Kara(this, coords, Directions.RIGHT);
               break;
             case 'V':
             case 'v':
-              kara = new Kara(this, coords, Direction.DOWN);
+              kara = new Kara(this, coords, Directions.DOWN);
               break;
           }
         }
