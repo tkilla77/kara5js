@@ -586,38 +586,50 @@ KaraWorld.create(
     * KaraStepper.
     * <p>This function assumes a deterministic world where each set of
     * commands executed in the same order results in the same outcome. */
-  async executeKara(delay_ms = 500, client_function = my_kara, maxCommands = 50) {
+  async executeKara(delay_ms = 500, client_function = 'my_kara', maxCommands = 50) {
     this.recorder.maxCommands = maxCommands;
+    let exception = undefined;
     try {
+      if (typeof client_function == 'string') {
+        client_function = window[client_function];
+      }
       if (typeof client_function == 'function') {
          // call well-known function in client-code
          client_function(this.recorder);
       } else {
-        throw new Error(`Not a function: ${client_function}`);
+        console.log(`Not a valid client function: ${client_function}`)
       }
     } catch (e) {
-      if (e instanceof InvalidMoveException) {
-        // Swallow exception and abort execution, will raise again during replay.
+      // Record exception for rethrowing.
+      if (e instanceof InvalidMoveException || e instanceof TooManyMovesException) {
+        exception = e;
       }
-      // Log other exceptions (e.g. too many moves), but do not abort.
-      console.log(e);
     }
     let stepper = new KaraStepper(this.kara, delay_ms);
-    return this.recorder.replay(stepper);
+    return this.recorder.replay(stepper)
+      .catch((e) => {
+        if (e instanceof InvalidMoveException || e instanceof TooManyMovesException) {
+          throw exception;
+        }
+      });
   }
 
   /** A key-handler for manual Kara movement. */
   keyPressed() {
     if (keyCode == UP_ARROW) {
+      if (event) event.preventDefault();
       this.kara.move();
       return false;
     } else if (keyCode == LEFT_ARROW) {
+      if (event) event.preventDefault();
       this.kara.turnLeft();
       return false;
     } else if (keyCode == RIGHT_ARROW) {
+      if (event) event.preventDefault();
       this.kara.turnRight();
       return false;
     } else if (keyCode == DOWN_ARROW) {
+      if (event) event.preventDefault();
       if (this.kara.onLeaf()) {
         this.kara.removeLeaf();
       } else {
